@@ -1,0 +1,109 @@
+import { WooCommerceRestApiVersion } from "@woocommerce/woocommerce-rest-api/index.mjs"
+
+export type WooSwellConfig = {
+    woo: WooConfig
+    swell: SwellConfig
+}
+
+export type DirPaths = {
+    data: string,
+    images: string
+}
+
+export type FilePaths = {
+    wooImageFiles: string,
+    wooImageJson: string,
+    wooProducts: string,
+    swellCategories: string,
+}
+
+
+export type SwellConfig = {
+    store: string,
+    key: string
+}
+
+
+export type WooConfig = {
+    url: string,
+    consumerKey: string,
+    consumerSecret: string,
+    version?: WooCommerceRestApiVersion
+}
+
+export type CategoryObject = {
+    [slug: string]: string;
+}
+
+export type WooImage = {
+    filename: string,
+    caption: string,
+    name: string
+    productSlug: string
+}
+
+export type WooImageObj = {
+    [slug: string]: WooImage[]
+}
+
+export type SwellFile = {
+    filename: string,
+    path: string
+}
+
+export type CreateProductOptions = {
+    loadFromFile?: boolean,
+    customFields?: FieldMap[],
+    pages?: { first: number, last: number }
+}
+
+/** map the name of the woo field to the swell field */
+export type FieldMap = {
+    woo: string, swell: string
+}
+
+export type Pages = {
+    first: number, last: number
+}
+
+export type GetWooProductsOptions = {
+    loadFromFile?: boolean,
+    jsonFilePath? : string,
+    pages?: Pages
+}
+
+export type GetAllPagesWooOptions = {
+    pages?: Pages
+}
+
+export type GetImageListFromWooOptions = {
+    loadFromFile?: boolean,
+}
+
+export type GetSwellCategoriesOptions = {
+    loadFromFile?: boolean
+}
+
+export type GetAllPagesSwellOptions = {
+    pages?: Pages,
+    queryOptions?: SwellQueryOptions
+}
+
+export type SwellQueryOptions = {
+    where: { [key: string]: any},
+    sort: string,
+    limit: number,
+    search: string,
+    expand: string | Array<string>,
+    include: { [key: string]: any}
+}
+
+export type UploadImagesFromFolderOptions = {
+    loadFromFile?: boolean
+    skipDuplicates?: boolean,
+}
+
+export type FileDetail = {
+    filename: string, 
+    path: string
+}
