@@ -1,4 +1,4 @@
-declare module "@woocommerce/woocommerce-rest-api" {
+declare module "@woocommerce/woocommerce-rest-api/index.mjs" {
 
     // Type definitions for @woocommerce/woocommerce-rest-api 1.0
 // Project: https://github.com/woocommerce/woocommerce-rest-api-js-lib

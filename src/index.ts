@@ -1,4 +1,4 @@
-import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
+import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api/index.mjs';
 import swell from 'swell-node';
 import mime from 'mime-types';
 import sizeOf from 'image-size';

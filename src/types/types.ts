@@ -1,4 +1,4 @@
-import { WooCommerceRestApiVersion } from "@woocommerce/woocommerce-rest-api"
+import { WooCommerceRestApiVersion } from "@woocommerce/woocommerce-rest-api/index.mjs"
 
 export type WooSwellConfig = {
     woo: WooConfig
