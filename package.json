@@ -1,12 +1,13 @@
 {
   "name": "woo-swell-migrate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Migrate product and image data from WooCommerce to Swell",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "tsc"
   },
   "keywords": [
     "woocommerce",
@@ -15,23 +16,22 @@
     "migration"
   ],
   "author": "Charlie Wettlaufer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vettloffah/woo-swell-migrate"
+  },
   "license": "ISC",
   "dependencies": {
-    "@babel/preset-env": "^7.17.10",
-    "@types/jest": "^27.5.0",
     "@woocommerce/woocommerce-rest-api": "^1.0.1",
-    "babel-jest": "^28.1.0",
     "chalk": "^5.0.1",
     "image-size": "^1.0.1",
-    "jest": "^28.1.0",
     "mime-types": "^2.1.35",
-    "odoo-await": "^3.0.1",
-    "swell-node": "^4.0.9",
-    "ts-jest": "^28.0.1",
-    "typescript": "^4.6.4"
+    "swell-node": "^4.0.9"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.1",
-    "@types/node": "^17.0.31"
+    "@types/node": "^17.0.31",
+    "@types/jest": "^27.5.0",
+    "typescript": "^4.6.4"
   }
 }
