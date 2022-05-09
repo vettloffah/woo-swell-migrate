@@ -1,6 +1,6 @@
 {
   "name": "woo-swell-migrate",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Migrate product and image data from WooCommerce to Swell",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

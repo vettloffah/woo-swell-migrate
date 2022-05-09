@@ -1,10 +1,9 @@
 # WooCommerce Swell Migration Tool
-
-Migrate categories, products, and product images from WooCommerce to Swell.
+Migrate categories, products, and product images from WooCommerce to Swell.  
 Typescript library. Pure ESM module - cannot be imported with `require`. Must use `import` syntax.
 
 #### Background
-My business migrated from WooCommerce to Swell, and there weren't any migration tools available. So as I was working through the migration for my own business, I created this library.
+My business migrated from WooCommerce to Swell, and there weren't any migration tools available. So as I was working through the migration for my own business I created this library.
 
 #### Contributing
 If anyone would like to write tests for this library, that would be great. I had issues with getting jest to work with this pure ESM module. Other contributions welcome as well. Just fork the repo and submit a pull request.
@@ -52,7 +51,7 @@ const paths = {
      * wordpress media files. Required only if you are using this tool 
      * to migrate your product images.
      */ 
-    images: '/Users/myuser/Downloads/site-backup/wp-content/uploads/'
+    images: './site-backup/wp-content/uploads/'
 }
 
 const ws = new WooSwell(wooConfig, swellConfig, paths)
@@ -99,11 +98,11 @@ After that, your store should be pretty close to what it is in WooCommerce, assu
 Fields: name, slug, sku, description, tags, dimensions, price, sales price, category, images (separately, see below), stock level, active.
 
 **Categories:** 
-Categories are imported, and non matching categories are cleaned iup.
+Categories are imported, and non matching categories are cleaned iup.  
 Fields: name, slug, parent
 
 **Product Images**
-Images are uploaded from a folder on local machine, then linked to products.
+Images are uploaded from a folder on local machine, then linked to products.  
 Fields: filename, caption / alt, dimensions, url
 
 ### Custom Fields
@@ -137,7 +136,7 @@ Defaults to **false**. Even if set to true, this will be set to false if supplyi
 
 const options = {
     pages: { first: 1, last: 30 },
-    loadFromFile: true,
+    loadFromFile: false,
     customFields: [
         { woo: 'my_woo_field_name', swell: 'my_swell_field_name' }
     ]
@@ -188,7 +187,7 @@ Returns all (by default) or some of the pages of swell records
 #### getAllPagesWoo(endpoint, options)
 Returns all (by default) or some of the pages of woo records
 
-#### uploadImagesFromFile(options)
+#### uploadImagesFromFolder(options)
 Uploads image files to swell from local folder.
 
 #### getImageListFromWoo(options)
