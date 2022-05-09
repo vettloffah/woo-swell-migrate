@@ -1,22 +1,21 @@
 # WooCommerce Swell Migration Tool
 
 Migrate categories, products, and product images from WooCommerce to Swell.
-Fully typed library written in typescript.
+Typescript library. Pure ESM module - cannot be imported with `require`. Must use `import` syntax.
 
 #### Background
 My business migrated from WooCommerce to Swell, and there weren't any migration tools available. So as I was working through the migration for my own business, I created this library.
 
+#### Contributing
+If anyone would like to write tests for this library, that would be great. I had issues with getting jest to work with this pure ESM module. Other contributions welcome as well. Just fork the repo and submit a pull request.
+
 #### Requirements
-This was developed and tested using WooCommerce REST API version 3 and Node v16. It has not been tested with other tech stacks. I imagine it works with other versions of node down to 14, but maybe not other WooCommerce RESP API versions. If 
-anyone tests it on other versions please let me know if it works!
+This was developed and tested using WooCommerce REST API version 3 and Node v16. It has not been tested with other tech stacks.
 
-The unique identifier used to match products, categories, and images is the `slug` field. If, for some reason, your products and categories don't have a `slug` in woocommerce, this won't work.
+The unique identifier used to match products, categories, and images is the `slug` field. If, for some reason, your products and categories don't have a `slug` in woocommerce, you would need to modify the library to use a different unique identifier.
 
-*ESM modules only*  
-Current this module _only_ works in ESM modules. So that means your `package.json` needs `"type: "module"` property specified, and you need to the use the `import WooSwell from 'woo-swell-migrate` syntax for importing, _not_ `"require"`.
-This is because there are some dependency issues with importing the library after compiling to commonjs that I couldn't find a work-around for.
-
-#### Quick Start
+#### Getting Started
+The below script will migrate your entire store to Swell.
 
 ```js
 const WooSwell = import 'woo-swell-migrate';
