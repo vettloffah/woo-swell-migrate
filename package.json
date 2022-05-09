@@ -22,7 +22,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@woocommerce/woocommerce-rest-api": "^1.0.1",
+    "@woocommerce/woocommerce-rest-api": "github:vettloffah/woocommerce-rest-api",
     "chalk": "^5.0.1",
     "image-size": "^1.0.1",
     "mime-types": "^2.1.35",
