@@ -57,6 +57,7 @@ class WooSwell {
             /** JSON data files */
             wooImageJson: path.resolve(paths.data, 'woo-images.json'),
             wooProducts: path.resolve(paths.data, 'woo-products.json'),
+            wooCustomers: path.resolve(paths.data, 'woo-customers.json'),
             swellCategories: path.resolve(paths.data, 'swell-categories.json')
         }
         this.wooCategories = [];
@@ -648,6 +649,91 @@ class WooSwell {
 
         return { action: 'updated', product: res }
 
+    }
+
+    /**
+     * 
+     * @param options 
+     * @param options.loadFromFile
+     * @param options.pages
+     */
+    async getWooCustomers(options?: { loadFromFile?: boolean, pages?: Pages}){
+        let customers: Woo.Customer[] = [];
+
+        if (options?.loadFromFile && !options.pages && fs.existsSync(this.paths.wooImageJson)) {
+            customers =  JSON.parse(fs.readFileSync(this.paths.wooCustomers, 'utf-8')) as Woo.Customer[];
+            Log.info(`${Object.keys(customers).length} customer records loaded from ${this.paths.wooCustomers}`)
+            return customers;
+        }
+
+        customers = await this.getAllPagesWoo('customers', options) as Woo.Customer[];
+        return customers;
+    }
+
+    async getSwellCustomers(options?: { loadFromFile?: boolean, pages?: Pages}){
+
+        let customers: Swell.Account[] = [];
+
+        if (options?.loadFromFile && !options.pages && fs.existsSync(this.paths.wooImageJson)) {
+            customers =  JSON.parse(fs.readFileSync(this.paths.wooCustomers, 'utf-8')) as Swell.Account[];
+            Log.info(`${Object.keys(customers).length} customer records loaded from ${this.paths.wooCustomers}`)
+            return customers;
+        }
+
+        customers = await this.getAllPagesSwell('/accounts', options) as Swell.Account[];
+        return customers;
+
+    }
+
+    /**
+     * 
+     * @param options 
+     * 
+     * @param options.loadFromFile
+     */
+    async createOrUpdateCustomers(options?: {loadFromFile?: boolean, pages: Pages}){
+        const wooCustomers = await this.getWooCustomers(options);
+
+        for(const customer of wooCustomers){
+
+            const newCustomer: Swell.Account = {
+                email: customer.email,
+                first_name: customer.first_name,
+                last_name: customer.last_name,
+                phone: customer.billing?.phone,
+                billing: {
+                    address1: customer.billing?.address_1,
+                    address2: customer.billing?.address_2,
+                    city: customer.billing?.city,
+                    state: customer.billing?.state,
+                    zip: customer.billing?.postcode ? parseInt(customer.billing?.postcode) : undefined,
+                    country: customer.billing?.country,
+                    phone: customer.billing?.phone,
+                },
+                shipping: {
+                    address1: customer.shipping?.address_1,
+                    address2: customer.shipping?.address_2,
+                    city: customer.shipping?.city,
+                    state: customer.shipping?.state,
+                    zip: customer.shipping?.postcode ? parseInt(customer.shipping.postcode) : undefined,
+                    country: customer.shipping?.country,
+                }
+
+            }
+            
+            // const match = await this.swell.get('/accounts', {where: { email: { $eq: customer.email}}});
+            // /** if there's a match, update the customer record */
+            // if(match.results.length){
+            //     await swell.put(`/accounts/${match.results[0].id}, `)
+
+            // }
+
+            const res = await this.swell.post('/accounts' , newCustomer);
+
+            debugger;
+
+        }
+       
     }
 
     
