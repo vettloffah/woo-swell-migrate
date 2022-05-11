@@ -144,7 +144,7 @@ export interface Product {
     state?: string
   }
   
-  export interface MetaDaum {
+  export interface  MetaDaum {
     id: number
     key: string
     value: any

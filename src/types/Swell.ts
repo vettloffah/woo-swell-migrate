@@ -108,6 +108,7 @@ export interface Address {
     name?: string;
     first_name?: string;
     last_name?: string;
+    company?: string;
     address1?: string;
     address2?: string;
     city?: string;

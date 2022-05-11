@@ -177,7 +177,7 @@ class WooSwell {
      * automatically set to false if the `pages` option is provided.
      * 
      * @param options.customFields - array of field mappings if custom fields are being imported. Each field mapping 
-     * object should contain the name of the woo field, and the name of the swell field. Example: { woo: 'myfield', swell: 'my_field' }
+     * object should contain the name of the woo field, and the name of the swell field. Example: { woo: 'my_field', swell: 'my_field' }
      * 
      * @param options.pages - if importing a subset of pages, supply { first: number, last: number }
      */
@@ -691,18 +691,34 @@ class WooSwell {
      * 
      * @param options.loadFromFile
      */
-    async createOrUpdateCustomers(options?: {loadFromFile?: boolean, pages: Pages}){
+    async createCustomers(options?: {loadFromFile?: boolean, pages?: Pages, update?: boolean})
+    : Promise<{ created: number, skipped: number, updated: number }>{
+
+        const count = { created: 0, skipped: 0, updated: 0 }
         const wooCustomers = await this.getWooCustomers(options);
 
         for(const customer of wooCustomers){
+            if(customer.role !== "customer") { 
+                Log.info(`${customer.email} role is not "customer" -- skipping`);
+                count.skipped ++;
+                continue;
+             }
+
+             /** set type to company if there is a company name  */
+            const type = customer.billing?.company ? "business" : "individual";
 
             const newCustomer: Swell.Account = {
                 email: customer.email,
                 first_name: customer.first_name,
                 last_name: customer.last_name,
+                name: type === "business" ? customer.billing?.company : undefined,
                 phone: customer.billing?.phone,
+                type: type,
                 billing: {
+                    first_name: customer.billing?.first_name,
+                    last_name: customer.billing?.last_name,
                     address1: customer.billing?.address_1,
+                    company: customer.billing?.company,
                     address2: customer.billing?.address_2,
                     city: customer.billing?.city,
                     state: customer.billing?.state,
@@ -711,6 +727,9 @@ class WooSwell {
                     phone: customer.billing?.phone,
                 },
                 shipping: {
+                    first_name: customer.shipping?.first_name,
+                    last_name: customer.shipping?.last_name,
+                    company: customer.shipping?.company,
                     address1: customer.shipping?.address_1,
                     address2: customer.shipping?.address_2,
                     city: customer.shipping?.city,
@@ -720,19 +739,31 @@ class WooSwell {
                 }
 
             }
-            
-            // const match = await this.swell.get('/accounts', {where: { email: { $eq: customer.email}}});
-            // /** if there's a match, update the customer record */
-            // if(match.results.length){
-            //     await swell.put(`/accounts/${match.results[0].id}, `)
-
-            // }
 
             const res = await this.swell.post('/accounts' , newCustomer);
 
-            debugger;
+            if(res.errors?.email && options?.update){
+                const res = await this.swell.get('/accounts', { where: { email: { $eq: customer.email.toLowerCase() }}});
+                const customerId = res.results[0].id;
+                await this.swell.put(`/accounts/${customerId}`, newCustomer)
+
+                Log.event(`account ${customer.email} updated`)
+                count.updated ++;
+                continue;
+            }
+
+            if(res.errors?.email){
+                Log.warn(`${customer.email} already exists, skipping`)
+                count.skipped ++;
+                continue;
+            }
+
+            Log.event(`user ${customer.email} created`)
+            count.created ++;
 
         }
+
+        return count;
        
     }
 
