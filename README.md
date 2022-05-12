@@ -1,5 +1,6 @@
 # WooCommerce Swell Migration Tool
 Migrate categories, products, product images, and customers from WooCommerce to Swell.
+View roadmap and release notes [here](https://github.com/vettloffah/woo-swell-migrate/wiki).
 Typescript library. Pure ESM module - cannot be imported with `require`. Must use `import` syntax.
 
 #### Background
@@ -141,7 +142,7 @@ await ws.createOrUpdateProducts({ customFields });
 
 1. `pages: { first?: number, last?: number }`. Specify API pagination range of products from woocommerce to sync. 
 Useful for importing in batches, or if importing get interrupted. 
-Ommit the `last` page property to start at a certain page and complete to the end.
+Omit the `last` page property to start at a certain page and complete to the end.
 By default, **all pages** are loaded.
 2. `loadFromFile: boolean`. The first time this method is executed, it saves a json file to the `data` folder path specified in the constructor. If something breaks and you need to execute this again, you can load from the local file instead of calling the woocommerce API. If the file doesn't exist, it falls back to calling the API.
 Defaults to **false**. Even if set to true, this will be set to false if supplying the `pages` option, since the json file will likely not be the pages intended to import.
@@ -187,41 +188,44 @@ const { created, skipped } = await ws.migrateCustomers({ pagesPerBatch: 75, page
 ## All Available Methods
 See the source code for more complete documentation of all methods.
 
-#### createOrUpdateCategories()
+##### createOrUpdateCategories()
 Creates categories in Swell, or updates them if they exist already
 
-#### addCategoryParents()
+##### addCategoryParents()
 Creates the parent / child relationship in categories
 
-#### deleteUnmatchedCategories()
+##### deleteUnmatchedCategories()
 Delete categories in Swell that don't exist in the downloaded woocommerce data.
 
-#### createOrUpdateProducts(options)
+##### createOrUpdateProducts(options)
 Create or update products in Swell
 
-#### getWooProducts(options)
+##### getWooProducts(options)
 Returns an array of product objects from woocommerce
 
-#### getSwellCategories(options)
+##### getSwellCategories(options)
 Returns an array of category objects from swell
 
-#### getTotalPages(endpoint)
+##### getTotalPages(endpoint)
 Returns the number of total number of pages from woo API endpoint (calls the API once to get the data)
 
-#### getAllPagesSwell(endpoint, options)
+##### getAllPagesSwell(endpoint, options)
 Returns all (by default) or some of the pages of swell records
 
-#### getAllPagesWoo(endpoint, options)
+##### getAllPagesWoo(endpoint, options)
 Returns all (by default) or some of the pages of woo records
 
-#### uploadImagesFromFolder(options)
+##### uploadImagesFromFolder(options)
 Uploads image files to swell from local folder.
 
-#### getImageListFromWoo(options)
+##### getImageListFromWoo(options)
 Generate an object where the key is the product slug, and the value is an array of images data.
 
-#### attachImagesToProducts()
+##### attachImagesToProducts()
 Updates product records in Swell to link the uploaded images.
 
-### migrateCustomers(options)
+##### migrateCustomers(options)
 Migrate customer records in batches from woocommerce to swell.
+
+##### deleteAllProducts()
+Delete all products from Swell. Useful for clearing out demo products.
