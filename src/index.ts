@@ -214,6 +214,20 @@ class WooSwell {
         return count;
     }
 
+    async deleteAllProducts(){
+        const products = await this.getAllPagesSwell('/products') as Swell.Product[]
+        let batchPayload = []
+        for(const product of products){
+            batchPayload.push({
+                url: `/products/${product.id}`,
+                method: 'delete'
+            })
+        }
+
+       const res = await this.swell.post('/:batch', batchPayload)
+       Log.info(`deleted ${res.length} records`)
+    }
+
 
     /**
      * Get all product records from woocommerce. Can get a subset of products if the pages options is provided.
@@ -289,8 +303,11 @@ class WooSwell {
      */
     async getAllPagesSwell(endpoint: string, options?: GetAllPagesSwellOptions): Promise<object[]> {
         const res = await this.swell.get(endpoint, options?.queryOptions) as Swell.GenericResponse
+        let numPerPage = res.results.length;
+        let totalPages = Math.ceil(res.count / numPerPage)
+        
         let firstPage = options?.pages?.first || 1;
-        let lastPage = options?.pages?.last || Object.keys(res.pages).length;
+        let lastPage = options?.pages?.last || totalPages;
 
         let records = [];
 
@@ -603,6 +620,7 @@ class WooSwell {
 
         let categoryId = product.categories && product.categories.length ? swellCategories[product.categories[0].slug] : undefined;
         let newProduct: Swell.Product = {
+            $migrate: true,
             name: product.name,
             sku: product.sku,
             description: product.description,
@@ -610,7 +628,6 @@ class WooSwell {
             sale_price: product.sale_price ? parseFloat(product.sale_price) : undefined,
             category_id: categoryId,
             slug: product.slug,
-            stock_level: product.stock_quantity !== null ? product.stock_quantity : undefined,
             tags: tags,
             shipment_weight: product.weight ? parseFloat(product.weight) : undefined,
             active: product.status === "publish",
@@ -637,6 +654,14 @@ class WooSwell {
             for (const fieldMap of customFields) {
                 newProduct[fieldMap.swell] = product[fieldMap.woo];
             }
+        }
+
+        /** if stock quantity is set in woo, turn on stock tracking in swell
+         * and update stock level 
+         * */
+        if(product.stock_quantity !== null){
+            newProduct.stock_tracking = true;
+            newProduct.stock_level = product.stock_quantity;
         }
 
         const response = await this.swell.get('/products', { where: { slug: product.slug } })
