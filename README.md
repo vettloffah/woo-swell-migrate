@@ -77,7 +77,7 @@ await ws.deleteUnmatchedCategories()
 await ws.createOrUpdateProducts()
 
 /** 
- * finally, images. The folder path was specified in the constructor
+ * Import images. The folder path was specified in the constructor
  * By default, files will not be uploaded if a file with the same filename exists in swell already
  * You can override this default behavior in the options parameter: { skipDuplicates: false }
  */
@@ -91,7 +91,7 @@ await ws.attachImagesToProducts();
 
 /**
  * Migrate customers in batches. Duplicate records will be skipped.  
- * This uses the swell `migrate` flag, which is faster for large record sets.
+ * This uses the swell `migrate` feature, which is faster for large record sets.
  * Specify number of woocommerce pages to migrate per batch. Swell recommends 
  * less than 1,000 records per batch, which would be 100 pages at the default 
  * 10 records per page in woocommerce.
@@ -114,6 +114,10 @@ Fields: name, slug, parent
 Images are uploaded from a folder on local machine, then linked to products.  
 Fields: filename, caption / alt, dimensions, url
 
+**Customers / Accounts**
+Fields: email, first name, last name, name, phone, 
+type (business or individual), billing address, shipping address.
+
 ### Custom Fields
 If your wordpress / woo instance has custom fields that need to be migrated (or you want to import additional fields 
 that aren't in the default list above) you can specify them when executing the `createOrUpdateProducts` function.
@@ -135,7 +139,9 @@ await ws.createOrUpdateProducts({ customFields });
 
 #### createOrUpdateProducts(options)
 
-1. `pages: { first: number, last: number }`. Specify API pagination range of products from woocommerce to sync. This is useful for large stores with thousands of products. 
+1. `pages: { first?: number, last?: number }`. Specify API pagination range of products from woocommerce to sync. 
+Useful for importing in batches, or if importing get interrupted. 
+Ommit the `last` page property to start at a certain page and complete to the end.
 By default, **all pages** are loaded.
 2. `loadFromFile: boolean`. The first time this method is executed, it saves a json file to the `data` folder path specified in the constructor. If something breaks and you need to execute this again, you can load from the local file instead of calling the woocommerce API. If the file doesn't exist, it falls back to calling the API.
 Defaults to **false**. Even if set to true, this will be set to false if supplying the `pages` option, since the json file will likely not be the pages intended to import.
@@ -144,7 +150,7 @@ Defaults to **false**. Even if set to true, this will be set to false if supplyi
 // example
 
 const options = {
-    pages: { first: 1, last: 30 },
+    pages: { first: 30, last: 40 },
     loadFromFile: false,
     customFields: [
         { woo: 'my_woo_field_name', swell: 'my_swell_field_name' }
@@ -164,6 +170,18 @@ Defaults to **true**
 const options = { skipDuplicates: true, loadFromFile: true }
 
 await ws.uploadImagesFromFolder(options);
+```
+
+#### migrateCustomers(options)
+1. `pagesPerBatch: number` how many pages of woocommerce records to import to swell in each batch.  
+Swell recommends less than 1,000 records per `migrate` request, which would be 100 pages of woocommerce 
+records at the default of 10 records per page.
+
+2. `pages: { first?: number, last?: number }` if migration gets interrupted, you can start where you 
+left off by supplying a first page. 
+```js
+// example
+const { created, skipped } = await ws.migrateCustomers({ pagesPerBatch: 75, pages: { first: 175 } });
 ```
 
 ## All Available Methods
@@ -204,3 +222,6 @@ Generate an object where the key is the product slug, and the value is an array 
 
 #### attachImagesToProducts()
 Updates product records in Swell to link the uploaded images.
+
+### migrateCustomers(options)
+Migrate customer records in batches from woocommerce to swell.

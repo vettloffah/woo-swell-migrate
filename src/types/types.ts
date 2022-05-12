@@ -110,7 +110,8 @@ export type FileDetail = {
 }
 
 export type MigrateCustomersOptions = {
-    pagesPerBatch: number
+    pagesPerBatch?: number,
+    pages?: Pages
 }
 
 export type MigrateCustomersCount = {

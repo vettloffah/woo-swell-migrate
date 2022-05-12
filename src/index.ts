@@ -698,17 +698,25 @@ class WooSwell {
      * @param options.pagesPerBatch how many woocommerce pages of customer records to import per batch.  
      * The default number of records per page in woocommerce is 10. Swell recommends less than 1,000 
      * records per batch, which would be 100 pages. Defaults to 1.
+     * 
+     * @param options.pages if you want to only migrate a subset of woocommerce pages of customers 
+     * records, provide the pages option. `pages: { first: 100, last: 200 }`. You can ommit the `last` 
+     * page property to start migration at a certain point and continue to the end. example:
+     * `pages: { first: 150 }`
      */
     async migrateCustomers(options?: MigrateCustomersOptions): Promise<MigrateCustomersCount> {
 
         const count = { created: 0, skipped: 0 }
         const totalPages = await this.getTotalPages('customers');
         const pagesPerBatch = options?.pagesPerBatch || 1;
+        const firstPage = options?.pages?.first || 1;
+        const lastPage = options?.pages?.last || totalPages;
 
         /** loop through batches of pages  */
-        for (let i = 1; i < totalPages; i += pagesPerBatch) {
+        for (let i = firstPage; i <= lastPage; i += pagesPerBatch) {
                 const wooCustomers = await this.getAllPagesWoo('customers', {
-                    pages: { first: i, last: i + pagesPerBatch -1 } }) as Woo.Customer[];
+                    pages: { first: i, last: i + pagesPerBatch -1 } 
+                }) as Woo.Customer[];
 
             /** build the batch payload for import */
             const batchPayload = wooCustomers.map(customer => {
@@ -733,8 +741,8 @@ class WooSwell {
                 }
             })
 
-            Log.info(`Created: ${created}`)
-            Log.info(`Skipped: ${skipped}`);
+            Log.event(`${chalk.green('Created')}: ${created}`)
+            Log.event(`${chalk.yellow('Skipped')}: ${skipped}`);
 
             count.created += created;
             count.skipped += skipped;
