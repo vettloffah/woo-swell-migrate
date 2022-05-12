@@ -108,3 +108,12 @@ export type FileDetail = {
     filename: string, 
     path: string
 }
+
+export type MigrateCustomersOptions = {
+    pagesPerBatch: number
+}
+
+export type MigrateCustomersCount = {
+    created: number,
+    skipped: number
+}

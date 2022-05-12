@@ -1,5 +1,5 @@
 # WooCommerce Swell Migration Tool
-Migrate categories, products, and product images from WooCommerce to Swell.  
+Migrate categories, products, product images, and customers from WooCommerce to Swell.
 Typescript library. Pure ESM module - cannot be imported with `require`. Must use `import` syntax.
 
 #### Background
@@ -88,6 +88,15 @@ await ws.uploadImagesFromFolder();
  * each product.
  */
 await ws.attachImagesToProducts();
+
+/**
+ * Migrate customers in batches. Duplicate records will be skipped.  
+ * This uses the swell `migrate` flag, which is faster for large record sets.
+ * Specify number of woocommerce pages to migrate per batch. Swell recommends 
+ * less than 1,000 records per batch, which would be 100 pages at the default 
+ * 10 records per page in woocommerce.
+ */
+ await ws.migrateCustomers({ pagesPerBatch: 50 })
 
 ```
 After that, your store should be pretty close to what it is in WooCommerce, assuming your woocommerce store hasn't been too customized.

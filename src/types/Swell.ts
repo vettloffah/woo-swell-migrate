@@ -282,25 +282,33 @@ export interface Product {
     [key: string]: unknown;
 }
 
-interface Response {
+interface SuccessResponse {
     count  : number;
     page   : number;
     pages  : ResultPage[];
 }
 
-export interface ProductResponse extends Response {
+export interface ErrorResponse {
+    errors: object
+}
+
+export interface ProductResponse extends SuccessResponse {
     results: Product[];
 }
 
-export interface CategoryResponse extends Response {
+export interface CategoryResponse extends SuccessResponse {
     results: Category[];
 }
 
-export interface FileResponse extends Response {
+export interface FileResponse extends SuccessResponse {
     results: File[]
 }
 
-export interface GenericResponse extends Response {
+export interface AccountResponse extends SuccessResponse {
+    results: Account[]
+}
+
+export interface GenericResponse extends SuccessResponse {
     results: { [key: string]: unknown }[]
 }
 
