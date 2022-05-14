@@ -94,10 +94,10 @@ await ws.attachImagesToProducts();
  * Migrate customers in batches. Duplicate records will be skipped.  
  * This uses the swell `migrate` feature, which is faster for large record sets.
  * Specify number of woocommerce pages to migrate per batch. Swell recommends 
- * less than 1,000 records per batch, which would be 100 pages at the default 
- * 10 records per page in woocommerce.
+ * less than 1,000 records per batch, which would be 10 pages at the default 
+ * 100 records per page in this library.
  */
- await ws.migrateCustomers({ pagesPerBatch: 50 })
+ await ws.migrateCustomers({ pagesPerBatch: 5 }) // 500 records per batch
 
 ```
 After that, your store should be pretty close to what it is in WooCommerce, assuming your woocommerce store hasn't been too customized.
@@ -175,14 +175,16 @@ await ws.uploadImagesFromFolder(options);
 
 #### migrateCustomers(options)
 1. `pagesPerBatch: number` how many pages of woocommerce records to import to swell in each batch.  
-Swell recommends less than 1,000 records per `migrate` request, which would be 100 pages of woocommerce 
-records at the default of 10 records per page.
+Swell recommends less than 1,000 records per `migrate` request, which would be 10 pages of woocommerce 
+records at the default of 100 records per page.
 
 2. `pages: { first?: number, last?: number }` if migration gets interrupted, you can start where you 
 left off by supplying a first page. 
 ```js
 // example
-const { created, skipped } = await ws.migrateCustomers({ pagesPerBatch: 75, pages: { first: 175 } });
+
+/** 5 pages (500 records) per batch, starting on page 3 */
+const { created, skipped } = await ws.migrateCustomers({ pagesPerBatch: 5, pages: { first: 3 } });
 ```
 
 ## All Available Methods

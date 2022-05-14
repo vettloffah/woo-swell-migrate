@@ -293,16 +293,25 @@ class WooSwell {
      * 
      * @param endpoint - example: '/products'
      * 
-     * @param options - optional. if not provided, will return all records from all pages with no filters
+     * @param options - optional. if not provided, will return all records from 
+     * all pages with no filters.
      * 
-     * @param options.pages - supply a range of pages if not needing all - example: { pages: { first: 1, last: 10 } }
+     * @param options.pages - supply a range of pages if not needing all - 
+     * example: { pages: { first: 1, last: 10 } }
      * 
-     * @param options.queryOptions - Swell query options, limit, sort, where, etc. See https://swell.store/docs/api/?javascript#querying
+     * @param options.queryOptions - Swell query options, limit, sort, where, etc. 
+     * See https://swell.store/docs/api/?javascript#querying
      * 
      * @returns - record array
      */
     async getAllPagesSwell(endpoint: string, options?: GetAllPagesSwellOptions): Promise<object[]> {
-        const res = await this.swell.get(endpoint, options?.queryOptions) as Swell.GenericResponse
+
+        let queryOptions = { ...options?.queryOptions }
+        if(!queryOptions.limit){
+            queryOptions.limit = 100;
+        }
+
+        const res = await this.swell.get(endpoint, queryOptions) as Swell.GenericResponse
         let numPerPage = res.results.length;
         let totalPages = Math.ceil(res.count / numPerPage)
         
@@ -329,20 +338,26 @@ class WooSwell {
      * 
      * @param options - optional.
      * 
-     * @param options.pages - supply a page range if not loading all pages. example: { pages: { start: 10, end: 15 } }
+     * @param options.pages - supply a page range if not loading all pages. 
+     * example: { pages: { start: 10, end: 15 } }
+     * 
+     * @param options.limit how many records per page to get from the WooCommerce API. 
+     * Defaults to 100.
      * 
      * @returns - record array
      */
     async getAllPagesWoo(endpoint: string, options?: GetAllPagesWooOptions): Promise<object[]> {
 
-        const res = await this.woo.get(endpoint, {per_page: 100});
+        const perPage = options?.limit || 100;
+
+        const res = await this.woo.get(endpoint, { per_page: perPage });
         const firstPage = options?.pages?.first || 1;
         const lastPage = options?.pages?.last || parseInt(res.headers['x-wp-totalpages']);
         const records = [];
 
         Log.info(`getting woo ${endpoint} records from API`)
         for (let i = firstPage; i <= lastPage; i++) {
-            records.push(...(await this.woo.get(endpoint, { per_page: 100, page: i })).data)
+            records.push(...(await this.woo.get(endpoint, { per_page: perPage, page: i })).data)
             Log.event(`page ${i}/${lastPage}`)
         }
 
