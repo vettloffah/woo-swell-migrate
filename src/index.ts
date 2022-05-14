@@ -335,14 +335,14 @@ class WooSwell {
      */
     async getAllPagesWoo(endpoint: string, options?: GetAllPagesWooOptions): Promise<object[]> {
 
-        const res = await this.woo.get(endpoint);
+        const res = await this.woo.get(endpoint, {per_page: 100});
         const firstPage = options?.pages?.first || 1;
         const lastPage = options?.pages?.last || parseInt(res.headers['x-wp-totalpages']);
         const records = [];
 
         Log.info(`getting woo ${endpoint} records from API`)
         for (let i = firstPage; i <= lastPage; i++) {
-            records.push(...(await this.woo.get(endpoint, { page: i })).data)
+            records.push(...(await this.woo.get(endpoint, { per_page: 100, page: i })).data)
             Log.event(`page ${i}/${lastPage}`)
         }
 
