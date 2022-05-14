@@ -922,21 +922,35 @@ class WooSwell {
                 })
 
                 const { billing, shipping } = this.#getAddressesFromOrder(order);
+
+                const paid = order.status === "completed" || order.status === "processing";
         
                 /** order */
                 const swellOrder: Swell.Order = {
                     $migrate: true,
+                    number: parseInt(order.number),
                     date_created: order.date_created,
-                    items: items,
                     status: StatusEnum[order.status],
                     account_id: customerObj[order.customer_id],
+
+                    items,
+                    billing,
+                    shipping,
+                    
                     tax_total: parseFloat(order.total_tax),
                     sub_total: parseFloat(order.total) - parseFloat(order.total_tax),
                     grand_total: parseFloat(order.total),
                     shipment_total: parseFloat(order.shipping_total),
+                    shipment_price: parseFloat(order.shipping_total) - parseFloat(order.shipping_tax),
 
-                    billing,
-                    shipping,
+                    paid: paid,
+                    payment_marked: paid,
+                    payment_total: paid ? parseFloat(order.total) : 0,
+                    payment_balance: paid ? 0 : parseFloat(order.total),
+
+                    delivery_marked: order.status === "completed",
+                    delivered: order.status === "completed"
+                    
                 }
                 return ({ url: '/orders', data: swellOrder, method: 'POST' })
             })

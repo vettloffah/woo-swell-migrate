@@ -14,6 +14,7 @@ export interface Order {
     date_updated                          ?: string;
     date_webhook_first_failed             ?: null;
     delivered                             ?: boolean;
+    delivery_marked                       ?: boolean;
     discount_total                        ?: number;
     discounts                             ?: OrderDiscount[];
     gift_message                          ?: null;
