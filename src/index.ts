@@ -736,13 +736,13 @@ class WooSwell {
      * @param options 
      * 
      * @param options.pagesPerBatch how many woocommerce pages of customer records to import per batch.  
-     * The default number of records per page in woocommerce is 10. Swell recommends less than 1,000 
-     * records per batch, which would be 100 pages. Defaults to 1.
+     * The default number of records per page is 100. Swell recommends less than 1,000 
+     * records per batch, which would be 10 pages. Defaults to 1.
      * 
      * @param options.pages if you want to only migrate a subset of woocommerce pages of customers 
-     * records, provide the pages option. `pages: { first: 100, last: 200 }`. You can ommit the `last` 
+     * records, provide the pages option. `pages: { first: 10, last: 20 }`. You can omit the `last` 
      * page property to start migration at a certain point and continue to the end. example:
-     * `pages: { first: 150 }`
+     * `pages: { first: 10 }`
      */
     async migrateCustomers(options?: MigrateCustomersOptions): Promise<MigrateCustomersCount> {
 
