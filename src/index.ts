@@ -31,16 +31,15 @@ import {
     MigrateCustomersCount,
     MigrateCustomersOptions
 } from './types/types';
-import { WorkerPerformance } from 'worker_threads';
 
 class WooSwell {
 
     swell: swell;
     woo: WooCommerceRestApi;
-    swellCategories: Swell.Category[]
-    wooCategories: Woo.Category[]
+    swellCategories: Swell.Category[];
+    wooCategories: Woo.Category[];
     paths: FilePaths;
-    swellFiles: Swell.File[]
+    swellFiles: Swell.File[];
 
     /**
      * 
@@ -61,7 +60,9 @@ class WooSwell {
             wooImageJson: path.resolve(paths.data, 'woo-images.json'),
             wooProducts: path.resolve(paths.data, 'woo-products.json'),
             wooCustomers: path.resolve(paths.data, 'woo-customers.json'),
-            swellCategories: path.resolve(paths.data, 'swell-categories.json')
+            swellProducts: path.resolve(paths.data, 'swell-products.json'),
+            swellCategories: path.resolve(paths.data, 'swell-categories.json'),
+            swellAccounts: path.resolve(paths.data, 'swell-accounts.json'),
         }
         this.wooCategories = [];
         this.swellCategories = [];
@@ -214,18 +215,18 @@ class WooSwell {
         return count;
     }
 
-    async deleteAllProducts(){
+    async deleteAllProducts() {
         const products = await this.getAllPagesSwell('/products') as Swell.Product[]
         let batchPayload = []
-        for(const product of products){
+        for (const product of products) {
             batchPayload.push({
                 url: `/products/${product.id}`,
                 method: 'delete'
             })
         }
 
-       const res = await this.swell.post('/:batch', batchPayload)
-       Log.info(`deleted ${res.length} records`)
+        const res = await this.swell.post('/:batch', batchPayload)
+        Log.info(`deleted ${res.length} records`)
     }
 
 
@@ -305,7 +306,7 @@ class WooSwell {
         const res = await this.swell.get(endpoint, options?.queryOptions) as Swell.GenericResponse
         let numPerPage = res.results.length;
         let totalPages = Math.ceil(res.count / numPerPage)
-        
+
         let firstPage = options?.pages?.first || 1;
         let lastPage = options?.pages?.last || totalPages;
 
@@ -318,7 +319,7 @@ class WooSwell {
             Log.event(`page ${i}/${lastPage}`)
         }
 
-       // Log.info(`${records.length} records retrieved`)
+        // Log.info(`${records.length} records retrieved`)
         return records;
     }
 
@@ -659,7 +660,7 @@ class WooSwell {
         /** if stock quantity is set in woo, turn on stock tracking in swell
          * and update stock level 
          * */
-        if(product.stock_quantity !== null){
+        if (product.stock_quantity !== null) {
             newProduct.stock_tracking = true;
             newProduct.stock_level = product.stock_quantity;
         }
@@ -739,9 +740,9 @@ class WooSwell {
 
         /** loop through batches of pages  */
         for (let i = firstPage; i <= lastPage; i += pagesPerBatch) {
-                const wooCustomers = await this.getAllPagesWoo('customers', {
-                    pages: { first: i, last: i + pagesPerBatch -1 } 
-                }) as Woo.Customer[];
+            const wooCustomers = await this.getAllPagesWoo('customers', {
+                pages: { first: i, last: i + pagesPerBatch - 1 }
+            }) as Woo.Customer[];
 
             /** build the batch payload for import */
             const batchPayload = wooCustomers.map(customer => {
@@ -750,19 +751,19 @@ class WooSwell {
 
             /** confirm account was created by checking type of response */
             function isAccount(obj: any): obj is Swell.Account {
-                return obj.id !== undefined 
-              }
-            
+                return obj.id !== undefined
+            }
+
             /** create records */
             Log.info(`attempting to create ${batchPayload.length} records`)
             const res = await this.swell.post('/:batch', batchPayload);
             let created = 0, skipped = 0;
 
             res.forEach((element: Swell.ErrorResponse | Swell.Account) => {
-                if(isAccount(element)){
-                    created ++;
-                }else{
-                    skipped ++;
+                if (isAccount(element)) {
+                    created++;
+                } else {
+                    skipped++;
                 }
             })
 
@@ -775,6 +776,43 @@ class WooSwell {
         }
 
         return count;
+    }
+
+    /**
+     * 
+     * @param order woocommmerce order
+     * 
+     * @return billing and shipping addresses
+     */
+    #getAddressesFromOrder(order: Woo.Order){
+        const addresses =  {
+            billing: {
+                first_name: order.billing?.first_name,
+                last_name: order.billing?.last_name,
+                address1: order.billing?.address_1,
+                company: order.billing?.company,
+                address2: order.billing?.address_2,
+                city: order.billing?.city,
+                state: order.billing?.state,
+                zip: order.billing?.postcode ? parseInt(order.billing?.postcode) : undefined,
+                country: order.billing?.country,
+                phone: order.billing?.phone,
+            },
+            shipping: {
+                first_name: order.shipping?.first_name,
+                last_name: order.shipping?.last_name,
+                company: order.shipping?.company,
+                address1: order.shipping?.address_1,
+                address2: order.shipping?.address_2,
+                city: order.shipping?.city,
+                state: order.shipping?.state,
+                zip: order.shipping?.postcode ? parseInt(order.shipping.postcode) : undefined,
+                country: order.shipping?.country,
+            }
+            
+        }
+
+        return addresses
     }
 
     #getAccountObjFromCustomer(customer: Woo.Customer): Swell.Account {
@@ -816,6 +854,180 @@ class WooSwell {
 
         return account;
     }
+
+    /**
+     * Provide woocommerce customer id and get swell account id
+     * @returns 
+     */
+    async #getCustomerTranslationObj(options?: { loadFromFile?: boolean }) {
+
+        let swellAccounts;
+        let wooCustomers;
+        
+        if(options?.loadFromFile && fs.existsSync(this.paths.swellAccounts)){
+            swellAccounts = JSON.parse(fs.readFileSync(this.paths.swellAccounts, 'utf-8')) as Swell.Account[]
+        }else{
+            swellAccounts = await this.getAllPagesSwell('/accounts') as Swell.Account[];
+            fs.writeFileSync(this.paths.swellAccounts, JSON.stringify(swellAccounts))
+        }
+
+        if(options?.loadFromFile && fs.existsSync(this.paths.wooCustomers)){
+            wooCustomers = JSON.parse(fs.readFileSync(this.paths.wooCustomers, 'utf-8')) as Woo.Customer[]
+        }else{
+            wooCustomers =  await this.getAllPagesWoo('customers') as Woo.Customer[];
+            fs.writeFileSync(this.paths.wooCustomers, JSON.stringify(wooCustomers));
+        }
+
+        const swellEmailObj = getReducedObject(swellAccounts, 'email', 'id') as {[email: string]: string};
+
+        const transObj: {[email: string]: string} = {};
+
+        for(const customer of wooCustomers){
+            transObj[customer.id] = swellEmailObj[customer.email];
+        }
+
+        return transObj;
+
+    }
+
+    async migrateOrders(options: { pagesPerBatch?: number, pages?: Pages, loadFromFile?: boolean }) {
+        const productTransObj = await this.#getProductTranslationObj({ loadFromFile: options?.loadFromFile });
+        const customerObj = await this.#getCustomerTranslationObj({ loadFromFile: options?.loadFromFile });
+        const count = { created: 0, skipped: 0 }
+        const totalPages = await this.getTotalPages('orders');
+        const pagesPerBatch = options?.pagesPerBatch || 1;
+        const firstPage = options?.pages?.first || 1;
+        const lastPage = options?.pages?.last || totalPages;
+
+        /** loop through batches of pages  */
+        for (let i = firstPage; i <= lastPage; i += pagesPerBatch) {
+
+            const wooOrders = await this.getAllPagesWoo('orders', {
+                pages: { first: i, last: i + pagesPerBatch - 1 }
+            }) as Woo.Order[];
+
+        
+
+            /** build the batch payload for import */
+            const batchPayload = wooOrders.map(order => {
+                /** line items */
+                const items: Swell.Item[] = order.line_items.map(lineItem => {
+                    return {
+                        product_id: productTransObj[lineItem.product_id],
+                        price: lineItem.price,
+                        quantity: lineItem.quantity,
+                        price_total: parseFloat(lineItem.total),
+                        tax_total: lineItem.total_tax ? parseFloat(lineItem.total_tax) : 0.00,
+                    }
+                })
+
+                const { billing, shipping } = this.#getAddressesFromOrder(order);
+        
+                /** order */
+                const swellOrder: Swell.Order = {
+                    $migrate: true,
+                    date_created: order.date_created,
+                    items: items,
+                    status: StatusEnum[order.status],
+                    account_id: customerObj[order.customer_id],
+                    tax_total: parseFloat(order.total_tax),
+                    sub_total: parseFloat(order.total) - parseFloat(order.total_tax),
+                    grand_total: parseFloat(order.total),
+                    shipment_total: parseFloat(order.shipping_total),
+
+                    billing,
+                    shipping,
+                }
+                return ({ url: '/orders', data: swellOrder, method: 'POST' })
+            })
+
+            /** confirm account was created by checking type of response */
+            function isAccount(obj: any): obj is Swell.Account {
+                return obj.id !== undefined
+            }
+
+            /** create records */
+            Log.info(`attempting to create ${batchPayload.length} records`)
+            const res = await this.swell.post('/:batch', batchPayload);
+            let created = 0, skipped = 0;
+
+            res.forEach((element: Swell.ErrorResponse | Swell.Account) => {
+                if (isAccount(element)) {
+                    created++;
+                } else {
+                    skipped++;
+                }
+            })
+
+            Log.event(`${chalk.green('Created')}: ${created}`)
+            Log.event(`${chalk.yellow('Skipped')}: ${skipped}`);
+
+            count.created += created;
+            count.skipped += skipped;
+
+        }
+
+        return count;
+
+
+    }
+
+    /** download all product data from both platforms so we can link products
+     * to orders by product ID.
+     */
+    async #getProductTranslationObj(options?: { loadFromFile?: boolean }): Promise<any> {
+        let wooProducts: Woo.Product[];
+        let swellProducts: Swell.Product[];
+
+        /** get swell products */
+        if (options?.loadFromFile && fs.existsSync(this.paths.swellProducts)) {
+            swellProducts = JSON.parse(fs.readFileSync(this.paths.swellProducts, 'utf-8'));
+        } else {
+            swellProducts = await this.getAllPagesSwell('/products') as Swell.Product[];
+            fs.writeFileSync(this.paths.swellProducts, JSON.stringify(swellProducts));
+        }
+
+        /** get woo products */
+        if (options?.loadFromFile && fs.existsSync(this.paths.wooProducts)) {
+            wooProducts = JSON.parse(fs.readFileSync(this.paths.wooProducts, 'utf-8'));
+        } else {
+            wooProducts = await this.getAllPagesWoo('products') as Woo.Product[];
+            fs.writeFileSync(this.paths.wooProducts, JSON.stringify(wooProducts));
+        }
+
+        /** create slug:id swell object */
+        const swellSlugObj = getReducedObject(swellProducts, 'slug', 'id') as { [slug: string]: string }
+
+        /** create translation object
+         * Object should be woo product id: swell product id
+         */
+        const transObj: { [wooId: number]: string } = {};
+        for (const wooProduct of wooProducts) {
+            if (swellSlugObj[wooProduct.slug]) {
+                transObj[wooProduct.id] = swellSlugObj[wooProduct.slug]
+            }
+        }
+
+        return transObj
+    }
+
+
+
+
+
 }
+
+/** translate woo status to swell status */
+enum StatusEnum {
+    "pending"   = "pending",
+    "processing"= "pending",
+    "on-hold"   = "hold",
+    "completed" = "complete",
+    "cancelled" = "canceled",
+    "refunded"  = "canceled",
+    "failed"    = "canceled",
+    "trash"     = "canceled"
+}
+
 
 export default WooSwell;

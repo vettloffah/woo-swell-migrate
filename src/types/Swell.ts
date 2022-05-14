@@ -10,8 +10,8 @@ export interface Order {
     coupon_code                           ?: string;
     coupon_id                             ?: string;
     currency                              ?: string;
-    date_created                          ?: Date;
-    date_updated                          ?: Date;
+    date_created                          ?: string;
+    date_updated                          ?: string;
     date_webhook_first_failed             ?: null;
     delivered                             ?: boolean;
     discount_total                        ?: number;
@@ -65,6 +65,8 @@ export interface Order {
     webhook_attempts_failed               ?: null;
     webhook_response                      ?: null;
     webhook_status                        ?: number;
+
+    $migrate                              ?: boolean;
 }
 
 export interface ExpandedOrder extends Order {
@@ -72,9 +74,8 @@ export interface ExpandedOrder extends Order {
     items  ?: [ExpandedItem]
 }
 
-export enum OrderStatus {
-    "pending", "draft", "payment_pending", "delivery_pending", "hold", "complete", "canceled"
-}
+export type OrderStatus =
+    "pending" | "draft" | "payment_pending" | "delivery_pending" | "hold" | "complete" | "canceled"
 
 export interface Account {
     id?: string;
@@ -251,8 +252,8 @@ export interface Product {
     cross_sells        ?: CrossSell[];
     currency           ?: string;
     customizable       ?: boolean;
-    date_created       ?: Date;
-    date_updated       ?: Date;
+    date_created       ?: string;
+    date_updated       ?: string;
     delivery           ?: string;
     description        ?: string;
     images             ?: Image[];
@@ -379,26 +380,6 @@ export interface UpSell {
     product_id?: string;
 }
 
-export interface Product {
-    id                ?: string;
-    name              ?: string;
-    active            ?: boolean;
-    codes             ?: Code[];
-    currency          ?: string;
-    date_created      ?: Date;
-    date_expired      ?: Date;
-    date_updated      ?: Date;
-    date_valid        ?: Date;
-    description       ?: string;
-    discount_group    ?: null;
-    discounts         ?: Discount[];
-    limit_account_uses?: number;
-    limit_code_uses   ?: number;
-    limit_uses        ?: number;
-    multi_codes       ?: boolean;
-    use_count         ?: number;
-}
-
 export interface Code {
     code?: string;
 }
@@ -441,3 +422,4 @@ export interface Category {
     date_created?: string
     id?: string
   }
+

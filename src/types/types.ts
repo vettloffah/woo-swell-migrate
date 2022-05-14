@@ -15,7 +15,9 @@ export type FilePaths = {
     wooImageJson: string,
     wooProducts: string,
     wooCustomers: string,
+    swellProducts: string,
     swellCategories: string,
+    swellAccounts: string,
 }
 
 
