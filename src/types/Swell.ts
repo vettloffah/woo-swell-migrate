@@ -70,6 +70,19 @@ export interface Order {
     $migrate                              ?: boolean;
 }
 
+export interface Shipment {
+    $migrate?: boolean,
+	order_id: string,
+	items: ShipmentItem[],
+	tracking_code?: string,
+}
+
+interface ShipmentItem {
+    order_item_id: string, 
+      product_id: string, //Product id as found in Swell
+      quantity: number, //
+}
+
 export interface ExpandedOrder extends Order {
     account?: Account,
     items  ?: [ExpandedItem]

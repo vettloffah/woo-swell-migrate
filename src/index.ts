@@ -924,6 +924,8 @@ class WooSwell {
                 const { billing, shipping } = this.#getAddressesFromOrder(order);
 
                 const paid = order.status === "completed" || order.status === "processing";
+                const subTotal = parseFloat(order.total) - parseFloat(order.total_tax) - parseFloat(order.shipping_total);
+
         
                 /** order */
                 const swellOrder: Swell.Order = {
@@ -938,25 +940,27 @@ class WooSwell {
                     shipping,
                     
                     tax_total: parseFloat(order.total_tax),
-                    sub_total: parseFloat(order.total) - parseFloat(order.total_tax),
+                    sub_total: subTotal,
                     grand_total: parseFloat(order.total),
                     shipment_total: parseFloat(order.shipping_total),
                     shipment_price: parseFloat(order.shipping_total) - parseFloat(order.shipping_tax),
+                    shipment_tax_included_total: parseFloat(order.shipping_total),
+                    shipment_delivery: !!order.shipping_lines.length,
 
                     paid: paid,
                     payment_marked: paid,
                     payment_total: paid ? parseFloat(order.total) : 0,
-                    payment_balance: paid ? 0 : parseFloat(order.total),
+                    payment_balance: paid ? 0 : parseFloat(order.total) * -1, // negative balance means customer owes money
 
                     delivery_marked: order.status === "completed",
-                    delivered: order.status === "completed"
+                    delivered: order.status === "completed",
                     
                 }
                 return ({ url: '/orders', data: swellOrder, method: 'POST' })
             })
 
             /** confirm account was created by checking type of response */
-            function isAccount(obj: any): obj is Swell.Account {
+            function isOrder(obj: any): obj is Swell.Order {
                 return obj.id !== undefined
             }
 
@@ -965,8 +969,8 @@ class WooSwell {
             const res = await this.swell.post('/:batch', batchPayload);
             let created = 0, skipped = 0;
 
-            res.forEach((element: Swell.ErrorResponse | Swell.Account) => {
-                if (isAccount(element)) {
+            res.forEach((element: Swell.ErrorResponse | Swell.Order) => {
+                if (isOrder(element)) {
                     created++;
                 } else {
                     skipped++;
