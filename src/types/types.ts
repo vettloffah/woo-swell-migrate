@@ -76,7 +76,8 @@ export type GetWooProductsOptions = {
 }
 
 export type GetAllPagesWooOptions = {
-    pages?: Pages
+    pages?: Pages,
+    limit?: number
 }
 
 export type GetImageListFromWooOptions = {
@@ -93,12 +94,12 @@ export type GetAllPagesSwellOptions = {
 }
 
 export type SwellQueryOptions = {
-    where: { [key: string]: any},
-    sort: string,
-    limit: number,
-    search: string,
-    expand: string | Array<string>,
-    include: { [key: string]: any}
+    where?: { [key: string]: any},
+    sort?: string,
+    limit?: number,
+    search?: string,
+    expand?: string | Array<string>,
+    include?: { [key: string]: any}
 }
 
 export type UploadImagesFromFolderOptions = {
