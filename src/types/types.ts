@@ -121,3 +121,14 @@ export type MigrateCustomersCount = {
     created: number,
     skipped: number
 }
+
+export type MigrateOrdersOptions = { 
+    pagesPerBatch?: number, 
+    pages?: Pages, 
+    loadFromFile?: boolean 
+}
+
+export type MigrateOrdersCount = {
+    created: number,
+    skipped: number
+}

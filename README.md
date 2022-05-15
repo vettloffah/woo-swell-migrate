@@ -1,6 +1,6 @@
 # WooCommerce Swell Migration Tool
-Migrate categories, products, product images, and customers from WooCommerce to Swell.
-View roadmap and release notes [here](https://github.com/vettloffah/woo-swell-migrate/wiki).
+Migrate categories, products, product images, and customers from WooCommerce to Swell.  
+View roadmap and release notes [here](https://github.com/vettloffah/woo-swell-migrate/wiki).  
 Typescript library. Pure ESM module - cannot be imported with `require`. Must use `import` syntax.
 
 #### Background
@@ -15,7 +15,13 @@ This was developed and tested using WooCommerce REST API version 3 and Node v16.
 The unique identifier used to match products, categories, and images is the `slug` field. If, for some reason, your products and categories don't have a `slug` in woocommerce, you would need to modify the library to use a different unique identifier.
 
 #### Getting Started
-The below script will migrate your entire store to Swell.
+
+Install
+```sh
+npm install woo-swell-migrate
+```
+
+The below script will migrate your WooCommerce store to Swell.
 
 ```js
 const WooSwell = import 'woo-swell-migrate';
@@ -91,33 +97,49 @@ await ws.uploadImagesFromFolder();
 await ws.attachImagesToProducts();
 
 /**
- * Migrate customers in batches. Duplicate records will be skipped.  
+ * Migrate customers in batches. If a record exists with the email address already, 
+ * it will be skipped since `email` is a unique identifier in swell. 
+ *  
  * This uses the swell `migrate` feature, which is faster for large record sets.
  * Specify number of woocommerce pages to migrate per batch. Swell recommends 
- * less than 1,000 records per batch, which would be 10 pages at the default 
- * 100 records per page in this library.
+ * less than 1,000 records per batch, which would be 10 pages 
+ * at the default 100 records per page in this library.
  */
- await ws.migrateCustomers({ pagesPerBatch: 5 }) // 500 records per batch
+await ws.migrateCustomers({ pagesPerBatch: 5, loadFromFile: true })
 
+/**
+ * After customers and products are migrated, you can import 
+ * orders. This **WILL** create duplicate orders if executed multiple times.
+ * 
+ * Most of the data files will have been saved at this point, so 
+ * providing the `loadFromFile` options will drastically speed 
+ * up the process.
+ */
+await ws.migrateOrders({ pagesPerBatch: 5, loadFromFile: true })
 ```
 After that, your store should be pretty close to what it is in WooCommerce, assuming your woocommerce store hasn't been too customized.
 
 ### Default fields supported
 
-**Products:** 
+**Products:**   
 Fields: name, slug, sku, description, tags, dimensions, price, sales price, category, images (separately, see below), stock level, active.
 
-**Categories:** 
-Categories are imported, and non matching categories are cleaned iup.  
+**Categories:**   
+Categories are imported, and non matching categories are cleaned up.    
 Fields: name, slug, parent
 
-**Product Images**
+**Product Images**  
 Images are uploaded from a folder on local machine, then linked to products.  
 Fields: filename, caption / alt, dimensions, url
 
-**Customers / Accounts**
+**Customers / Accounts**  
 Fields: email, first name, last name, name, phone, 
 type (business or individual), billing address, shipping address.
+
+**Orders**  
+Fields: order date, order number, customer, billing and shipping addresses, 
+line items, subtotals, tax totals, shipping cost, payment status, 
+delivery status.
 
 ### Custom Fields
 If your wordpress / woo instance has custom fields that need to be migrated (or you want to import additional fields 
@@ -184,7 +206,26 @@ left off by supplying a first page.
 // example
 
 /** 5 pages (500 records) per batch, starting on page 3 */
-const { created, skipped } = await ws.migrateCustomers({ pagesPerBatch: 5, pages: { first: 3 } });
+const options = { pagesPerBatch: 5, pages: { first: 3 } }
+const { created, skipped } = await ws.migrateCustomers(options);
+
+console.log(`Total created: ${created}, total skipped: ${skipped}`);
+```
+
+#### migrateOrders(options)
+1. `pagesPerBatch: number` how many pages of woocommerce records to import to swell in each batch.  
+Swell recommends less than 1,000 records per `migrate` request, which would be 10 pages of woocommerce 
+records at the default of 100 records per page.
+
+2. `loadFromFile: boolean` set to true to load products and customer data from json files if they exist 
+already from running this or other functions previously. 
+```js
+// example
+
+const options = { pagesPerBatch: 5, loadFromFile: true }
+const { created } = await ws.migrateOrders(options)
+
+console.log(`total orders imported: ${created}`);
 ```
 
 ## All Available Methods
@@ -228,6 +269,9 @@ Updates product records in Swell to link the uploaded images.
 
 ##### migrateCustomers(options)
 Migrate customer records in batches from woocommerce to swell.
+
+##### migrateOrders(options)
+Migrate order records in batches from woocommerce to swell.
 
 ##### deleteAllProducts()
 Delete all products from Swell. Useful for clearing out demo products.
