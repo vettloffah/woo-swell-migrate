@@ -1,1 +1,6 @@
 .env
+tsconfig.json
+src
+.vscode
+coverage
+node_modules
