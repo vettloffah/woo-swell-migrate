@@ -4,3 +4,6 @@ src
 .vscode
 coverage
 node_modules
+.prettierrc
+.eslintrc.json
+.eslintignore

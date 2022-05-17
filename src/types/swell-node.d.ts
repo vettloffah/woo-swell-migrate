@@ -1,14 +1,4 @@
-declare module 'swell-node'{
-
-     class Client {
-
-        static init(clientId: string, clientKey: string, options?: Options): Client
-        get(url: string, data?: Data, callback?: () => void): Promise<any>
-        put(url: string, data: Data, callback?: () => void): Promise<any>
-        post(url: string, data: Data, callback?: () => void): Promise<any>
-        delete(url: string, data?: Data, callback?: () => void): Promise<any>
-
-    }
+declare module "swell-node"{
 
     interface Options {
         id?: string,
@@ -29,7 +19,6 @@ declare module 'swell-node'{
         count: number,
         page: Page[],
         results: Data[]
-
     }
 
     interface Page {
@@ -37,14 +26,14 @@ declare module 'swell-node'{
         end: number
     }
 
-    enum RequestMethod {
-        "get", "post", "put", "delete"
+    class Client {
+        static init(clientId: string, clientKey: string, options?: Options): Client
+        get(url: string, data?: Data, callback?: () => void): Promise<any>
+        put(url: string, data: Data, callback?: () => void): Promise<any>
+        post(url: string, data: Data, callback?: () => void): Promise<any>
+        delete(url: string, data?: Data, callback?: () => void): Promise<any>
     }
 
     export = Client;
-       
+
 }
-
-
-
-

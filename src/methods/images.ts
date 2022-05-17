@@ -1,15 +1,15 @@
-import WooSwell from '../index';
-import * as Log from '../utils/Log.js';
-import fs from 'fs';
-import mime from 'mime-types';
-import sizeOf from 'image-size';
-import getReducedObject from '../utils/getReducedObject.js';
-import path from 'path';
-import { getWooProducts } from './products.js';
+import WooSwell from "../index";
+import * as Log from "../utils/Log.js";
+import fs from "fs";
+import mime from "mime-types";
+import sizeOf from "image-size";
+import getReducedObject from "../utils/getReducedObject.js";
+import path from "path";
+import { getWooProducts } from "./products.js";
 
-import * as Woo from '../types/WooCommerce';
-import * as Swell from '../types/Swell';
-import { FileDetail, GetImageListFromWooOptions, UploadImagesFromFolderOptions, WooImage, WooImageObj } from '../types/types';
+import * as Woo from "../types/WooCommerce";
+import * as Swell from "../types/Swell";
+import { FileDetail, GetImageListFromWooOptions, UploadImagesFromFolderOptions, WooImage, WooImageObj } from "../types/types";
 
 /**
 * Iterates through a folder of images files and uploads them to swell.
@@ -37,14 +37,14 @@ export async function uploadImagesFromFolder(this: WooSwell, options?: UploadIma
 
     /** confirm directory exists  */
     if (!fs.existsSync(path)) {
-        throw new Error(`Image directory path ${path} doesn't exist.`)
+        throw new Error(`Image directory path ${path} doesn't exist.`);
     }
 
-    let wooImageObj = await _getImageListFromWoo.call(this, { loadFromFile })
+    const wooImageObj = await _getImageListFromWoo.call(this, { loadFromFile });
 
-    let wooImageFiles = [];
-    for (const [product, imageArray] of Object.entries(wooImageObj)) {
-        let filenames = imageArray.map(image => image.filename);
+    const wooImageFiles = [];
+    for (const [, imageArray] of Object.entries(wooImageObj)) {
+        const filenames = imageArray.map(image => image.filename);
         wooImageFiles.push(...filenames);
     }
 
@@ -54,16 +54,15 @@ export async function uploadImagesFromFolder(this: WooSwell, options?: UploadIma
         existingFilenames = await _getExistingSwellFileNames.call(this);
     }
 
-    Log.wait('getting local file index (takes a while depending on folder size)');
-    const localFiles = await _getLocalFiles.call(this, path)
-    const localFileObj = getReducedObject(localFiles, 'filename', 'path')
+    Log.wait("getting local file index (takes a while depending on folder size)");
+    const localFiles = await _getLocalFiles.call(this, path);
+    const localFileObj = getReducedObject(localFiles, "filename", "path");
     const localFilenames = localFiles.map(localFile => {
         return localFile.filename;
-    })
+    });
 
     Log.info(`uploading files`);
 
-    let that = this;
     for (const filename of localFilenames) {
         /** skip if the file doesn't belong to a woo product, or if it's already been uploaded */
         if (!wooImageFiles.includes(filename)) continue;
@@ -72,7 +71,6 @@ export async function uploadImagesFromFolder(this: WooSwell, options?: UploadIma
         await uploadImage.call(this, localFileObj[filename], filename);
         Log.event(`file ${filename} uploaded`);
     }
-
 }
 
 /**
@@ -82,9 +80,9 @@ export async function uploadImagesFromFolder(this: WooSwell, options?: UploadIma
  */
 export async function attachImagesToProducts(this: WooSwell): Promise<void> {
     const filePath = this.paths.wooImageJson;
-    let wooImages = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as { [slug: string]: WooImage[] }
+    const wooImages = JSON.parse(fs.readFileSync(filePath, "utf-8")) as { [slug: string]: WooImage[] };
     if (!this.swellFiles.length) {
-        this.swellFiles = await this.getAllPagesSwell('/:files') as Swell.File[];
+        this.swellFiles = await this.getAllPagesSwell("/:files") as Swell.File[];
     }
     type FileObj = {
         [filename: string]: Swell.File
@@ -92,47 +90,44 @@ export async function attachImagesToProducts(this: WooSwell): Promise<void> {
 
     const initialValue = { [this.swellFiles[0].filename]: this.swellFiles[0] };
 
-    let fileObj = this.swellFiles.reduce((acc: FileObj, curr: Swell.File, index: number) => {
-        return { ...acc, [curr.filename]: curr }
-    }, initialValue) as FileObj
+    const fileObj = this.swellFiles.reduce((acc: FileObj, curr: Swell.File) => {
+        return { ...acc, [curr.filename]: curr };
+    }, initialValue) as FileObj;
 
     for (const [slug, images] of Object.entries(wooImages)) {
-
-        let imgArr: { caption: string, file: Swell.File }[] = [];
+        const imgArr: { caption: string, file: Swell.File }[] = [];
         images.forEach(img => {
             if (!fileObj[img.filename]) return;
-            imgArr.push({ caption: img.caption, file: fileObj[img.filename] })
-        })
+            imgArr.push({ caption: img.caption, file: fileObj[img.filename] });
+        });
 
         if (!imgArr.length) {
             continue;
         }
 
-        const res = (await this.swell.get('/products', {
+        const res = (await this.swell.get("/products", {
             where: {
-                slug: slug
-            }
-        }))
+                slug,
+            },
+        }));
 
         if (!res.results.length) {
             Log.warn(`product slug ${slug} not found, can't attach photo`);
             continue;
         }
 
-        const product = res.results[0]
+        const product = res.results[0];
         const resp = await this.swell.put(`/products/${product.id}`, {
-            $set: { images: imgArr }
-        })
+            $set: { images: imgArr },
+        });
 
         if (resp.error) {
             Log.error(`error attaching image: ${resp.error.message}`);
         }
 
         if (!resp.error) {
-            Log.event(`attached image to ${product.name}`)
+            Log.event(`attached image to ${product.name}`);
         }
-
-
     }
 }
 
@@ -147,12 +142,11 @@ export async function attachImagesToProducts(this: WooSwell): Promise<void> {
  * @returns Object - key is the image slug, value is an array of image objects.
  */
  async function _getImageListFromWoo(this: WooSwell, options: GetImageListFromWooOptions): Promise<WooImageObj> {
-
-    let wooImageObj: WooImageObj = {};
+    const wooImageObj: WooImageObj = {};
 
     if (options?.loadFromFile && fs.existsSync(this.paths.wooImageJson)) {
-        const images = JSON.parse(fs.readFileSync(this.paths.wooImageJson, 'utf-8'));
-        Log.info(`${Object.keys(images).length} woo image detail records loaded from ${this.paths.wooImageJson}`)
+        const images = JSON.parse(fs.readFileSync(this.paths.wooImageJson, "utf-8"));
+        Log.info(`${Object.keys(images).length} woo image detail records loaded from ${this.paths.wooImageJson}`);
         return images;
     }
 
@@ -163,14 +157,14 @@ export async function attachImagesToProducts(this: WooSwell): Promise<void> {
             wooImageObj[product.slug] = [];
             product.images.forEach(image => {
                 const url = image.src;
-                const filename = url.substring(url.lastIndexOf('/') + 1);
+                const filename = url.substring(url.lastIndexOf("/") + 1);
                 wooImageObj[product.slug].push({
                     filename,
                     caption: image.alt,
                     name: image.name,
-                    productSlug: product.slug
+                    productSlug: product.slug,
                 });
-            })
+            });
         }
     }
 
@@ -188,17 +182,14 @@ export async function attachImagesToProducts(this: WooSwell): Promise<void> {
  * @returns fileNames - array of filenames that exist in swell
  */
 async function _getExistingSwellFileNames(this: WooSwell): Promise<string[]> {
-
     if (!this.swellFiles.length) {
-        this.swellFiles = await this.getAllPagesSwell('/:files') as Swell.File[]
+        this.swellFiles = await this.getAllPagesSwell("/:files") as Swell.File[];
     }
     /** get just the names from the file objects  */
     let fileNames: string[] = this.swellFiles.map(file => file.filename);
 
     /** remove undefined elements */
-    fileNames = fileNames.filter(filename => {
-        if (filename) return filename;
-    })
+    fileNames = fileNames.filter(filename => filename !== undefined);
 
     return fileNames;
 }
@@ -211,19 +202,19 @@ async function _getExistingSwellFileNames(this: WooSwell): Promise<string[]> {
  */
 async function uploadImage(this: WooSwell, filePath: any, filename: string): Promise<void> {
     const file = fs.readFileSync(filePath);
-    const dimensions = sizeOf(filePath)
-    const base64 = file.toString('base64');
+    const dimensions = sizeOf(filePath);
+    const base64 = file.toString("base64");
 
-    await this.swell.post('/:files', {
+    await this.swell.post("/:files", {
         data: {
             $binary: base64,
-            $type: '00',
+            $type: "00",
         },
         filename,
         content_type: mime.lookup(filename),
         width: dimensions.width,
         height: dimensions.height,
-    })
+    });
 }
 
  /**
@@ -232,13 +223,12 @@ async function uploadImage(this: WooSwell, filePath: any, filename: string): Pro
      * @returns Array of file details objects.
      */
   async function _getLocalFiles(dirPath: string): Promise<FileDetail[]> {
-
     const dirents = await fs.promises.readdir(dirPath, { withFileTypes: true });
     const files: any[] = await Promise.all(dirents.map((dirent: fs.Dirent) => {
         const res = path.resolve(dirPath, dirent.name);
         return dirent.isDirectory()
             ? _getLocalFiles(res)
-            : { filename: dirent.name, path: res }
+            : { filename: dirent.name, path: res };
     }));
-    return Array.prototype.concat(...files)
+    return Array.prototype.concat(...files);
 }
