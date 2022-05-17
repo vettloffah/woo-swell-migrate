@@ -8,6 +8,7 @@
     "@typescript-eslint/no-unused-expressions": ["off"],
     "@typescript-eslint/no-var-requires": ["off"],
     "@typescript-eslint/no-use-before-define": ["off"],
+    "@typescript-eslint/no-multi-spaces": ["off"],
     "comma-dangle": ["error", "always-multiline"],
     "no-async-promise-executor": ["off"],
     "no-empty-pattern": ["off"],
@@ -21,7 +22,9 @@
     "sort-keys": ["off"],
     "space-before-function-paren": ["off"],
     "indent": ["off"],
-    "no-trailing-spaces": ["error", { "ignoreComments": true}]
+    "no-trailing-spaces": ["error", { "ignoreComments": true}],
+    "key-spacing": ["off"],
+   "no-multi-spaces": ["off"]
   },
   "env": {
     "browser": true,

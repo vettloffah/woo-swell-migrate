@@ -1,4 +1,16 @@
-import { WooCommerceRestApiVersion } from "@woocommerce/woocommerce-rest-api/index.mjs"
+import { WooCommerceRestApiVersion } from "@woocommerce/woocommerce-rest-api/index.mjs";
+
+export type SwellConfig = {
+    store: string,
+    key: string
+}
+
+export type WooConfig = {
+    url: string,
+    consumerKey: string,
+    consumerSecret: string,
+    version?: WooCommerceRestApiVersion
+}
 
 export type WooSwellConfig = {
     woo: WooConfig
@@ -11,27 +23,13 @@ export type DirPaths = {
 }
 
 export type FilePaths = {
-    wooImageFiles: string,
-    wooImageJson: string,
-    wooProducts: string,
-    wooCustomers: string,
-    swellProducts: string,
+    wooImageFiles:   string,
+    wooImageJson:    string,
+    wooProducts:     string,
+    wooCustomers:    string,
+    swellProducts:   string,
     swellCategories: string,
-    swellAccounts: string,
-}
-
-
-export type SwellConfig = {
-    store: string,
-    key: string
-}
-
-
-export type WooConfig = {
-    url: string,
-    consumerKey: string,
-    consumerSecret: string,
-    version?: WooCommerceRestApiVersion
+    swellAccounts:   string,
 }
 
 export type CategoryObject = {
@@ -54,15 +52,14 @@ export type SwellFile = {
     path: string
 }
 
+/** map the name of the woo field to the swell field */
+export type FieldMap = {
+    woo: string, swell: string
+}
 export type CreateProductOptions = {
     loadFromFile?: boolean,
     customFields?: FieldMap[],
     pages?: { first: number, last: number }
-}
-
-/** map the name of the woo field to the swell field */
-export type FieldMap = {
-    woo: string, swell: string
 }
 
 export type Pages = {
@@ -88,11 +85,6 @@ export type GetSwellCategoriesOptions = {
     loadFromFile?: boolean
 }
 
-export type GetAllPagesSwellOptions = {
-    pages?: Pages,
-    queryOptions?: SwellQueryOptions
-}
-
 export type SwellQueryOptions = {
     where?: { [key: string]: any},
     sort?: string,
@@ -101,6 +93,10 @@ export type SwellQueryOptions = {
     expand?: string | Array<string>,
     include?: { [key: string]: any}
 }
+export type GetAllPagesSwellOptions = {
+    pages?: Pages,
+    queryOptions?: SwellQueryOptions
+}
 
 export type UploadImagesFromFolderOptions = {
     loadFromFile?: boolean
@@ -108,7 +104,7 @@ export type UploadImagesFromFolderOptions = {
 }
 
 export type FileDetail = {
-    filename: string, 
+    filename: string,
     path: string
 }
 
@@ -122,10 +118,10 @@ export type MigrateCustomersCount = {
     skipped: number
 }
 
-export type MigrateOrdersOptions = { 
-    pagesPerBatch?: number, 
-    pages?: Pages, 
-    loadFromFile?: boolean 
+export type MigrateOrdersOptions = {
+    pagesPerBatch?: number,
+    pages?: Pages,
+    loadFromFile?: boolean
 }
 
 export type MigrateOrdersCount = {
