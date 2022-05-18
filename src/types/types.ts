@@ -23,13 +23,13 @@ export type DirPaths = {
 }
 
 export type FilePaths = {
-    wooImageFiles:   string,
-    wooImageJson:    string,
-    wooProducts:     string,
-    wooCustomers:    string,
-    swellProducts:   string,
+    wooImageFiles: string,
+    wooImageJson: string,
+    wooProducts: string,
+    wooCustomers: string,
+    swellProducts: string,
     swellCategories: string,
-    swellAccounts:   string,
+    swellAccounts: string,
 }
 
 export type CategoryObject = {
@@ -68,7 +68,7 @@ export type Pages = {
 
 export type GetWooProductsOptions = {
     loadFromFile?: boolean,
-    jsonFilePath? : string,
+    jsonFilePath?: string,
     pages?: Pages
 }
 
@@ -86,12 +86,12 @@ export type GetSwellCategoriesOptions = {
 }
 
 export type SwellQueryOptions = {
-    where?: { [key: string]: any},
+    where?: { [key: string]: any },
     sort?: string,
     limit?: number,
     search?: string,
     expand?: string | Array<string>,
-    include?: { [key: string]: any}
+    include?: { [key: string]: any }
 }
 export type GetAllPagesSwellOptions = {
     pages?: Pages,

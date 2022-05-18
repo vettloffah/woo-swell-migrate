@@ -1,14 +1,14 @@
-declare module "swell-node"{
+declare module "swell-node" {
 
     interface Options {
-        id?:         string,
-        key?:        string,
-        version?:    number,
-        host?:       string,
-        port?:       number,
+        id?: string,
+        key?: string,
+        version?: number,
+        host?: string,
+        port?: number,
         verifyCert?: boolean,
-        debug?:      boolean,
-        cache?:      boolean,
+        debug?: boolean,
+        cache?: boolean,
     }
 
     interface Data {
