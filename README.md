@@ -24,7 +24,7 @@ npm install woo-swell-migrate
 The below script will migrate your WooCommerce store to Swell.
 
 ```js
-const WooSwell = import 'woo-swell-migrate';
+import WooSwell from 'woo-swell-migrate';
 
  /** 
   * Woo API key generated in woocommerce settings -> advanced 
