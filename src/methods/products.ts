@@ -81,29 +81,45 @@ async function createOrUpdateProduct(this: WooSwell, product: Woo.Product, categ
         $migrate: true,
         name: product.name,
         sku: product.sku,
-        description: product.description,
+       description: product.description,
         price: parseFloat(product.price || "0"),
         sale_price: product.sale_price ? parseFloat(product.sale_price) : undefined,
-        category_id: categoryId,
-        slug: product.slug,
-        tags: tags,
+       //category_id: categoryId,
+       slug: product.slug,
+       tags: tags,
         shipment_weight: product.weight ? parseFloat(product.weight) : undefined,
         active: product.status === "publish",
+        type: product.virtual ? "digital" : "standard",
+        delivery: product.virtual ? undefined : "shipment", 
+       // stock_tracking: product.virtual === false,
+        virtual: product.virtual,
         options: product.attributes?.map(att => {
             return {
                 name: att.name,
                 input_type: 'select',
                 values: att.options.map((option: string) => { return { name: option } })
             } as Swell.ProductOption;
-        })
+        }),
+        purchase_options: {
+            standard: {
+                "active": true,
+                price: parseFloat(product.price || "0"),
+                sale: product.on_sale,
+                sale_price: product.on_sale ? product.sale_price : null
+            }
+        }
     }
+
+    console.log(newProduct.sku);
 
     /** if the woo product contains dimensions, include dimensions */
     if (product.dimensions?.height) {
+        newProduct.dimensions = true;
         newProduct.shipment_dimensions = {
             length: parseFloat(product.dimensions.length),
             width: parseFloat(product.dimensions.width),
             height: parseFloat(product.dimensions.height),
+            unit: "in"
         }
     }
 
